@@ -1,8 +1,8 @@
 # Real-Time Market Surveillance & Risk Controls
 
-> An automated monitoring-and-intervention system built around a live trading bot in Polymarket's 5-minute crypto prediction markets, run for about three months (small fixed stakes, $5 per trade in the final config, with paper-trading used to stage changes first).
->
-> The trading logic was the environment. What this repo is really about is the **detection, intervention, and validation** layers around it: spotting spoofing in the order book and locking out activity when it fires, monitoring large wallets, and testing whether my own risk model was actually earning its keep.
+An automated monitoring-and-intervention system built around a live trading bot in Polymarket's 5-minute crypto prediction markets, run for about three months (small fixed stakes, $5 per trade in the final config, with paper-trading used to stage changes first).
+
+The trading logic was the environment. What this repo is really about is the **detection, intervention, and validation** layers around it: spotting spoofing in the order book and locking out activity when it fires, monitoring large wallets, and testing whether my own risk model was actually earning its keep.
 
 **Status:** archived portfolio project · not intended for live use · credentials and data removed · ~9,900 lines of Python (the order-signing service is intentionally left out — see [Execution layer](#execution-layer-design-only))
 
