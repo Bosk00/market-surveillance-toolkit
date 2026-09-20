@@ -1,4 +1,4 @@
-# Real-Time Market Surveillance & Risk Controls — a Polymarket Case Study
+# Real-Time Market Surveillance & Risk Controls
 
 > An automated monitoring-and-intervention system built around a live trading bot in Polymarket's 5-minute crypto prediction markets, run for about three months (small fixed stakes, $5 per trade in the final config, with paper-trading used to stage changes first).
 >
@@ -22,7 +22,6 @@
 - **Independent verification and an audit trail.** Every logged trade is re-verified against Polymarket's resolved-market data, logs are de-duplicated by token ID, and a separate measurement process records market data straight from exchange streams — independent of the bot's own code.
 - **A headline metric that hid the real risk.** The strategy won roughly 83–89% of the time, and this repo documents why that number is misleading. [Details below.](#the-finding-a-headline-metric-that-hid-the-real-risk)
 
-<!-- Add a dashboard screenshot here once you have one: ![Monitoring dashboard](docs/dashboard.png) -->
 
 ## Surveillance concepts, mapped to the code
 
@@ -30,7 +29,7 @@
 |---|---|
 | Real-time anomaly detection (spoofing pattern) | `Isolated signal concepts/spoof_detector.py` (prototype), live gate in `Core trading system/unified_bot.py` |
 | Automated intervention on an alert | Spoof lockout, whale pause, daily loss limit, win-rate throttle |
-| Large-actor / entity monitoring | `Distinct Strategies/WHALEWATCHINGBOT.py`, `Wallet Behavior Profiling/monitor_wallet_live.py` |
+| Large-actor / entity monitoring | `Distinct Strategies/whale_watching_bot.py`, `Wallet Behavior Profiling/monitor_wallet_live.py` |
 | Behavioral baselining of an entity | `Wallet Behavior Profiling/profile_wallet.py` |
 | Alert-threshold tuning from data | The 11,608-trade analysis; changelog at the top of `unified_bot.py` |
 | Alert-effectiveness review (false vs true positives) | `Core trading system/ml_shadow_log.py` |
@@ -79,7 +78,7 @@ flowchart LR
 The pattern came from watching order books by eye: large orders that appear near the price, sit briefly, and vanish shortly before a window closes, followed by a move. The prototype runs two WebSocket streams (price and order book); the version inside the live bots is a tighter rewrite against a single order-book stream.
 
 ### Large-wallet monitoring
-`WHALEWATCHINGBOT.py` tracks a set of large wallets' public trade activity. When a tracked wallet places two or more trades, or moves $500+, within a 3-minute window, trading pauses until the tracked wallets have been quiet for 5 minutes. The spoof lockout and whale pause are checked together as a single combined gate, so a trade fires only when neither is active.
+`whale_watching_bot.py` tracks a set of large wallets' public trade activity. When a tracked wallet places two or more trades, or moves $500+, within a 3-minute window, trading pauses until the tracked wallets have been quiet for 5 minutes. The spoof lockout and whale pause are checked together as a single combined gate, so a trade fires only when neither is active.
 
 `Wallet Behavior Profiling/` builds behavioral profiles of wallets from Polymarket's public activity API — what prices they buy at, how they size, when they act, which markets they pick. `monitor_wallet_live.py` polls a tracked wallet in real time. Knowing what normal looks like for an entity is what makes a deviation detectable, which is the same idea behind counterparty and entity due diligence.
 
@@ -151,7 +150,7 @@ The wallet-profiling technique shows up a second time in `Distinct Strategies/we
 
 Strategy logic and order execution were separate processes by design. The Python bot launched a small Node.js service as a child process, waited for it to report ready, then sent it trade decisions over localhost. That service was the only component that signed and submitted orders — the bot process only read market data and sent a keep-alive heartbeat — and it was bound to localhost and guarded by a shared-secret header, keeping order signing isolated from strategy logic.
 
-**I deliberately left the execution code out of this repo** so that nothing here can be used to place orders, in case it were misused. The bots' order calls simply have nothing to talk to. `WHALEWATCHINGBOT.py` predates the split and is included for its gating logic rather than as a working execution path.
+**I deliberately left the execution code out of this repo** so that nothing here can be used to place orders, in case it were misused. The bots' order calls simply have nothing to talk to. `whale_watching_bot.py` predates the split and is included for its gating logic rather than as a working execution path.
 
 ## Limitations
 
@@ -181,3 +180,5 @@ Config and credentials are not included.
 ## Disclaimer
 
 Archival and educational. Not financial advice. Trading involves risk of loss, and — see above — a high win rate does not mean low risk.
+
+No license is granted. This repository is shared for review purposes only (e.g. recruiting/portfolio evaluation) and is not licensed for reuse, modification, or redistribution.
